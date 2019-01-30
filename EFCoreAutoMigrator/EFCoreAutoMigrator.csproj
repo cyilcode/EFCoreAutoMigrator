@@ -2,6 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Cem YILMAZ</Authors>
+    <Description>An aggresive auto migrator tool for EF core 2.1 and above
+</Description>
+    <PackageLicenseUrl>https://github.com/cyilcode/EFCoreAutoMigrator/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/cyilcode/EFCoreAutoMigrator</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/cyilcode/EFCoreAutoMigrator</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <NeutralLanguage>English</NeutralLanguage>
+    <PackageTags>dotnet,dotnet-core,efcore,efcore2,entity-framework,core,auto,migration,migrator,automigrator,automigration,auto-migrator,auto-migration</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
