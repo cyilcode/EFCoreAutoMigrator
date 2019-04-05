@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
@@ -10,7 +9,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-[assembly: SuppressMessage("LocalUse", "EF1000", Justification = "Only for local use")]
+[assembly: SuppressMessage("LocalUse", "EF1000", Justification = "Development Tool")]
 namespace EFCoreAutoMigrator
 {
     public enum MigrationModelHashStorageMode
@@ -33,26 +32,7 @@ namespace EFCoreAutoMigrator
             _options = options ?? new AutoMigratorOptions();
         }
 
-        public void EnableAutoMigration(IList<string> args, Action postMigration = null)
-        {
-            if (args == null || args.Count <= 0)
-            {
-                return;
-            }
-
-            string migrateParamValue = GetRequestedParamValue(args, "--migrate");
-            // Check if the parameter that was sent a mode that we support ?
-            if (Enum.TryParse(migrateParamValue, true, out MigrationModelHashStorageMode mode))
-            {
-                EnableAutoMigration(GetRequestedParamValue(args, "--forcepostmigration") == "1", mode, postMigration);
-            }
-            else
-            {
-                throw new InvalidOperationException("Invalid migration mode");
-            }
-        }
-
-        public void EnableAutoMigration(bool forceMigration, MigrationModelHashStorageMode mode, Action postMigration = null)
+        public void Migrate(bool forceMigration, MigrationModelHashStorageMode mode, Action postMigration = null)
         {
             // Get the existing model hash.
             string currentHash = GetCurrentHash(mode);
@@ -95,22 +75,6 @@ namespace EFCoreAutoMigrator
             }
         }
 
-        private string GetRequestedParamValue(IList<string> args, string requestedParam)
-        {
-            int indexOfRequestedParam = args.IndexOf(requestedParam);
-            int indexOfRequestedParamValue = indexOfRequestedParam + 1;
-            if (indexOfRequestedParamValue != -1)
-            {
-                // Check for the value of migrate parameter
-                if (args.Count < indexOfRequestedParamValue)
-                {
-                    throw new InvalidOperationException($"Could not find the value of {requestedParam} parameter");
-                }
-            }
-
-            return args[indexOfRequestedParamValue] ?? string.Empty;
-        }
-
         private void ExecutePostMigration(Action postMigration)
         {
             WriteMessage("Executing database post process function...");
@@ -126,13 +90,13 @@ namespace EFCoreAutoMigrator
 
         private string Sha256(string rawData)
         {
-            using (SHA256 sha256Hash = SHA256.Create())
+            using (var sha256Hash = SHA256.Create())
             {
                 // ComputeHash - returns byte array
                 byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
 
                 // Convert byte array to a string
-                StringBuilder builder = new StringBuilder();
+                var builder = new StringBuilder();
                 for (int i = 0; i < bytes.Length; i++)
                 {
                     builder.Append(bytes[i].ToString("x2"));
