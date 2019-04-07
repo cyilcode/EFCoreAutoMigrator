@@ -12,19 +12,33 @@ using System.Text;
 [assembly: SuppressMessage("LocalUse", "EF1000", Justification = "Development Tool")]
 namespace EFCoreAutoMigrator
 {
+    /// <summary>
+    /// Modes for database migration hash storage method.
+    /// </summary>
     public enum MigrationModelHashStorageMode
     {
+        /// <summary>
+        /// Stores the created hash in your file system. This can be configured with <![CDATA[<see cref="AutoMigratorOptions"/>]]> class.
+        /// </summary>
         File = 0,
+        /// <summary>
+        /// Stores the created hash in your database. This can be configured with <![CDATA[<see cref="AutoMigratorOptions"/>]]> class.
+        /// </summary>
         Database = 1
     }
 
-    [ExcludeFromCodeCoverage]
     public class AutoMigrator
     {
         private readonly ILogger _logger;
         private readonly DbContext _dbContext;
         private readonly AutoMigratorOptions _options;
 
+        /// <summary>
+        /// Creates a new instance of AutoMigrator with given DbContext and settings.
+        /// </summary>
+        /// <param name="dbContext">DbContext to perform migration operations.</param>
+        /// <param name="options">Configurations for database migration and hash storage operations.</param>
+        /// <param name="logger">Logger for console or text outputs.</param>
         public AutoMigrator(DbContext dbContext, AutoMigratorOptions options = null, ILogger logger = null)
         {
             _logger = logger;
@@ -32,6 +46,12 @@ namespace EFCoreAutoMigrator
             _options = options ?? new AutoMigratorOptions();
         }
 
+        /// <summary>
+        /// Migrates your database schema to your database with the given settings.
+        /// </summary>
+        /// <param name="forceMigration">Forces the migration process even if there are no changes in the database schema.</param>
+        /// <param name="mode">Storage method of created schema hash.</param>
+        /// <param name="postMigration">Action reference for post migration process.</param>
         public void Migrate(bool forceMigration, MigrationModelHashStorageMode mode, Action postMigration = null)
         {
             // Get the existing model hash.
