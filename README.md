@@ -23,7 +23,7 @@ It is quite simple to install.
 
 You can install EFCoreAutoMigrator from NuGet with the command below:
 
-`Install-Package EFCoreAutoMigrator`.
+`Install-Package EFCoreAutoMigrator`
 
 ### On ASP.NET Core Project
 
@@ -35,13 +35,17 @@ public static class Program
         {
             IWebHost server = BuildWebHost(args);
             var env = server.Services.GetService(typeof(IHostingEnvironment)) as IHostingEnvironment;
+
+            // I would highly suggest you to not to use this tool in your production environment.
+            // Since it will vaporize your whole database which you probably don't want :)
             if (!env.IsProduction())
             {
                 using (IServiceScope serviceScope = server.Services.GetService<IServiceScopeFactory>().CreateScope())
                 {
+                    // Make sure that your DbContext is registered in your DI container.
                     MyDbContext myDbContext = serviceScope.ServiceProvider.GetService<MyDbContext>();
-                    new AutoMigrator(myDbContext)
-                        .EnableAutoMigration(false, MigrationModelHashStorageMode.Database, () =>
+                    new AutoMigrator(myDbContext).EnableAutoMigration(
+                        false, MigrationModelHashStorageMode.Database, () =>
                     {
                         // Seed function here if you need
                     });
@@ -57,3 +61,6 @@ public static class Program
                 .Build();
     }
 ```
+#### TODO: 
+    * Tests
+    * Further documentation

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using System;
 using System.Data;
 using System.Data.Common;
@@ -18,11 +19,11 @@ namespace EFCoreAutoMigrator
     public enum MigrationModelHashStorageMode
     {
         /// <summary>
-        /// Stores the created hash in your file system. This can be configured with <![CDATA[<see cref="AutoMigratorOptions"/>]]> class.
+        /// Stores the created hash in your file system. This can be configured with <see cref="AutoMigratorOptions"/> class.
         /// </summary>
         File = 0,
         /// <summary>
-        /// Stores the created hash in your database. This can be configured with <![CDATA[<see cref="AutoMigratorOptions"/>]]> class.
+        /// Stores the created hash in your database. This can be configured with <see cref="AutoMigratorOptions"/> class.
         /// </summary>
         Database = 1
     }
@@ -88,10 +89,6 @@ namespace EFCoreAutoMigrator
                 {
                     ExecutePostMigration(postMigration);
                 }
-            }
-            else if (forceMigration)
-            {
-                ExecutePostMigration(postMigration);
             }
         }
 
