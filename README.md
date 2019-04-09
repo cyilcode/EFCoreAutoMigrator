@@ -1,6 +1,6 @@
 [![NuGet](https://img.shields.io/nuget/dt/EFCoreAutoMigrator.svg)](https://www.nuget.org/packages/EFCoreAutoMigrator/)
 [![DynamicQueryBuilder](https://img.shields.io/nuget/v/EFCoreAutoMigrator.svg)](https://www.nuget.org/packages/EFCoreAutoMigrator/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/oplog/DynamicQueryBuilder/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/oplog/EFCoreAutoMigrator/blob/master/LICENSE)
 
 # What ?
 
