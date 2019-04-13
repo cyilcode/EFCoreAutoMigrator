@@ -7,6 +7,7 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -38,13 +39,15 @@ namespace EFCoreAutoMigrator
         /// Creates a new instance of AutoMigrator with given DbContext and settings.
         /// </summary>
         /// <param name="dbContext">DbContext to perform migration operations.</param>
+        /// <param name="secureDataSources">Secure data sources to prevent accidental auto migrator initiations.</param>
         /// <param name="options">Configurations for database migration and hash storage operations.</param>
         /// <param name="logger">Logger for console or text outputs.</param>
-        public AutoMigrator(DbContext dbContext, AutoMigratorOptions options = null, ILogger logger = null)
+        public AutoMigrator(DbContext dbContext, SecureDataSource[] secureDataSources, AutoMigratorOptions options = null, ILogger logger = null)
         {
             _logger = logger;
-            _dbContext = dbContext;
             _options = options ?? new AutoMigratorOptions();
+            _dbContext = dbContext ?? throw new ArgumentNullException("DbContext is required.");
+            CheckSecureDataSources(dbContext, secureDataSources);
         }
 
         /// <summary>
@@ -231,6 +234,17 @@ namespace EFCoreAutoMigrator
 
             // Remove GO instructions since they are not compatible with ExecuteSqlCommand.
             _dbContext.Database.ExecuteSqlCommand(executionScript.Replace("GO", string.Empty));
+        }
+
+        private void CheckSecureDataSources(DbContext dbContext, SecureDataSource[] secureDataSources)
+        {
+            DbConnection dbConnection = dbContext.Database.GetDbConnection();
+            string serverAddress = dbConnection.DataSource.ToUpperInvariant();
+            string databaseName = dbConnection.Database.ToUpperInvariant();
+            if (secureDataSources.Any(x => x.ServerAddress == serverAddress && x.DatabaseName == databaseName))
+            {
+                throw new SecureDataSourceException("Given connection was added as secure data source !");
+            }
         }
 
         private DbDataReader ExecuteReaderCommand(string command, Array parameters, DbConnection connection)
