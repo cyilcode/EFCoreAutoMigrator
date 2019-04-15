@@ -44,7 +44,17 @@ public static class Program
                 {
                     // Make sure that your DbContext is registered in your DI container.
                     MyDbContext myDbContext = serviceScope.ServiceProvider.GetService<MyDbContext>();
-                    new AutoMigrator(myDbContext).EnableAutoMigration(
+                    // Always protect your production/secure databases.
+                    var secureDataSources = new SecureDataSource[] 
+                    {
+                        new SecureDataSource 
+                        {
+                            ServerAddress = "mysecure.database.net",
+                            DatabaseName = "my-production-database"
+                        }
+                    };
+                    
+                    new AutoMigrator(myDbContext, secureDataSources).EnableAutoMigration(
                         false, MigrationModelHashStorageMode.Database, () =>
                     {
                         // Seed function here if you need
