@@ -2,9 +2,9 @@
 
 namespace EFCoreAutoMigrator
 {
-    public sealed class SecureDataSource
+    public class BlacklistedSource : DataSourceBase
     {
-        public SecureDataSource(string serverAddress, string databaseName)
+        public BlacklistedSource(string serverAddress, string databaseName)
         {
             if (string.IsNullOrEmpty(serverAddress))
             {
@@ -16,12 +16,8 @@ namespace EFCoreAutoMigrator
                 throw new ArgumentException("Required parameter", nameof(databaseName));
             }
 
-            this.ServerAddress = serverAddress.ToUpperInvariant();
-            this.DatabaseName = databaseName.ToUpperInvariant();
+            base.ServerAddress = serverAddress.ToUpperInvariant();
+            base.DatabaseName = databaseName.ToUpperInvariant();
         }
-
-        public string ServerAddress { get; private set; }
-
-        public string DatabaseName { get; private set; }
     }
 }
