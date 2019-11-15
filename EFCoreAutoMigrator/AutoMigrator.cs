@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using System;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -39,15 +39,30 @@ namespace EFCoreAutoMigrator
         /// Creates a new instance of AutoMigrator with given DbContext and settings.
         /// </summary>
         /// <param name="dbContext">DbContext to perform migration operations.</param>
-        /// <param name="secureDataSources">Secure data sources to prevent accidental auto migrator initiations.</param>
+        /// <param name="blacklistedSources">Secure data sources to prevent accidental auto migrator initiations.</param>
         /// <param name="options">Configurations for database migration and hash storage operations.</param>
         /// <param name="logger">Logger for console or text outputs.</param>
-        public AutoMigrator(DbContext dbContext, SecureDataSource[] secureDataSources, AutoMigratorOptions options = null, ILogger logger = null)
+        public AutoMigrator(DbContext dbContext, BlacklistedSource[] blacklistedSources, AutoMigratorOptions options = null, ILogger logger = null)
         {
             _logger = logger;
             _options = options ?? new AutoMigratorOptions();
             _dbContext = dbContext ?? throw new ArgumentNullException("DbContext is required.");
-            CheckSecureDataSources(dbContext, secureDataSources);
+            CheckDataSource(dbContext, blacklistedSources, true);
+        }
+
+        /// <summary>
+        /// Creates a new instance of AutoMigrator with given DbContext and settings.
+        /// </summary>
+        /// <param name="dbContext">DbContext to perform migration operations.</param>
+        /// <param name="whitelistedSources">Insecure Data Sources to allow the AutoMigration process execute. EFCoreAutoMigrator will not execute any data source besides the ones that are provided in this list.</param>
+        /// <param name="options">Configurations for database migration and hash storage operations.</param>
+        /// <param name="logger">Logger for console or text outputs.</param>
+        public AutoMigrator(DbContext dbContext, WhitelistedSource[] whitelistedSources, AutoMigratorOptions options = null, ILogger logger = null)
+        {
+            _logger = logger;
+            _options = options ?? new AutoMigratorOptions();
+            _dbContext = dbContext ?? throw new ArgumentNullException("DbContext is required.");
+            CheckDataSource(dbContext, whitelistedSources, false);
         }
 
         /// <summary>
@@ -211,7 +226,7 @@ namespace EFCoreAutoMigrator
         {
             if (mode == MigrationModelHashStorageMode.Database)
             {
-                _dbContext.Database.ExecuteSqlCommand($"INSERT INTO {_options.MigrationHashTableName} (Hash) VALUES (@hash)", new SqlParameter("@hash", newHash));
+                _dbContext.Database.ExecuteSqlRaw($"INSERT INTO {_options.MigrationHashTableName} (Hash) VALUES (@hash)", new SqlParameter("@hash", newHash));
             }
             else
             {
@@ -233,17 +248,23 @@ namespace EFCoreAutoMigrator
             }
 
             // Remove GO instructions since they are not compatible with ExecuteSqlCommand.
-            _dbContext.Database.ExecuteSqlCommand(executionScript.Replace("GO", string.Empty));
+            _dbContext.Database.ExecuteSqlRaw(executionScript.Replace("GO", string.Empty));
         }
 
-        private void CheckSecureDataSources(DbContext dbContext, SecureDataSource[] secureDataSources)
+        private void CheckDataSource(DbContext dbContext, DataSourceBase[] dataSources, bool checkForBlacklist)
         {
             DbConnection dbConnection = dbContext.Database.GetDbConnection();
             string serverAddress = dbConnection.DataSource.ToUpperInvariant();
             string databaseName = dbConnection.Database.ToUpperInvariant();
-            if (secureDataSources.Any(x => x.ServerAddress == serverAddress && x.DatabaseName == databaseName))
+            bool isSourceListed = dataSources.Any(x => x.ServerAddress == serverAddress && x.DatabaseName == databaseName);
+
+            if (isSourceListed && checkForBlacklist)
             {
-                throw new SecureDataSourceException("Given connection was added as secure data source !");
+                throw new SecureDataSourceException("Cannot execute auto migration on a blacklisted server.");
+            }
+            else if (!checkForBlacklist && !isSourceListed)
+            {
+                throw new SecureDataSourceException("Cannot find the server in the whitelist.");
             }
         }
 

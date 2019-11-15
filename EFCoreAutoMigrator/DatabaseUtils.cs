@@ -36,7 +36,7 @@ namespace EFCoreAutoMigrator
             }
             else
             {
-                context.Database.ExecuteSqlCommand(sqlCode);
+                context.Database.ExecuteSqlRaw(sqlCode);
 
                 // AzureSQL forces a transaction but local SQL's dont. So, we need this check here.
                 if (context.Database.CurrentTransaction != null)
