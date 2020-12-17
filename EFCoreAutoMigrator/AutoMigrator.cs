@@ -71,7 +71,7 @@ namespace EFCoreAutoMigrator
         /// <param name="forceMigration">Forces the migration process even if there are no changes in the database schema.</param>
         /// <param name="mode">Storage method of created schema hash.</param>
         /// <param name="postMigration">Action reference for post migration process.</param>
-        public void Migrate(bool forceMigration, MigrationModelHashStorageMode mode, Action postMigration = null)
+        public void Migrate(bool forceMigration, MigrationModelHashStorageMode mode, Action preMigration = null, Action postMigration = null)
         {
             // Get the existing model hash.
             string currentHash = GetCurrentHash(mode);
@@ -85,6 +85,11 @@ namespace EFCoreAutoMigrator
             // Check for a change
             if (newHash != currentHash || forceMigration)
             {
+                if (preMigration != null)
+                {
+                    ExecuteBeforeMigration(preMigration);
+                }
+
                 // Woop-woop we have a change !
                 Console.WriteLine();
                 WriteMessage("DB model change detected. Executing migration..");
@@ -108,6 +113,14 @@ namespace EFCoreAutoMigrator
                     ExecutePostMigration(postMigration);
                 }
             }
+        }
+
+        private void ExecuteBeforeMigration(Action preMigration)
+        {
+            WriteMessage("Executing database pre process function...");
+            preMigration.Invoke();
+            WriteMessage("Migration sequence has been completed.");
+            Console.WriteLine();
         }
 
         private void ExecutePostMigration(Action postMigration)
