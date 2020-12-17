@@ -119,7 +119,7 @@ namespace EFCoreAutoMigrator
         {
             WriteMessage("Executing database pre process function...");
             preMigration.Invoke();
-            WriteMessage("Migration sequence has been completed.");
+            WriteMessage("Migration sequence starting...");
             Console.WriteLine();
         }
 
