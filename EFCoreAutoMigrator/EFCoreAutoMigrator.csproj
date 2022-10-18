@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>.net6</TargetFramework>
+    <TargetFramework>.net6.0</TargetFramework>
     <Authors>Cem YILMAZ</Authors>
     <Description>An aggresive auto migrator tool for EF core 2.1 and above
 </Description>
